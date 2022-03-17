@@ -1,6 +1,6 @@
 import { ScatterJS, ScatterEOS, Action } from 'scatter-ts';
 import { JsonRpc, Api } from 'eosjs';
-import { EOSIO_RPC, EOSIO_CHAIN_ID } from "./constants";
+import { EOSIO_RPC, EOSIO_CHAIN_ID, SCATTER_IDENTIFIER } from "./constants";
 // import fetch from "isomorphic-fetch";
 
 ScatterJS.plugins(new ScatterEOS());
@@ -28,7 +28,7 @@ export async function transact(actions: Action[]) {
 }
 
 export function connect() {
-    const connected = ScatterJS.connect('pomelo.io', { network });
+    const connected = ScatterJS.connect(SCATTER_IDENTIFIER, { network });
     if (!connected) throw "Can't connect to Scatter";
     return connected;
 }

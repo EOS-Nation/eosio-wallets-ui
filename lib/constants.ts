@@ -1,7 +1,9 @@
 export type Chain = "eos" | "wax" | "telos";
 
-export const ANCHOR_FUEL_REFERRER = "app"
-export const ANCHOR_IDENTIFIER = "app"
+export const IDENTIFIER = "myapp"
+export const ANCHOR_FUEL_REFERRER = IDENTIFIER;
+export const ANCHOR_IDENTIFIER = IDENTIFIER;
+export const SCATTER_IDENTIFIER = IDENTIFIER;
 
 export const EOSIO_RPCS = {
     'eos': 'https://eos.greymass.com',
