@@ -24,7 +24,7 @@ const Home: NextPage = () => {
 
         <div className={styles.grid}>
 
-          <Wallet src="/anchor.svg" alt="Anchor" />
+          <Wallet src="/anchor.svg" alt="Anchor" protocol={"anchor"} />
           <Wallet src="/tokenpocket.png" alt="TokenPocket" />
           <Wallet src="/wombat.png" alt="Wombat" />
           <Wallet src="/scatter.svg" alt="Scatter" />
