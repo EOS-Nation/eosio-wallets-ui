@@ -1,7 +1,6 @@
-import { ScatterJS, ScatterEOS, Action } from 'scatter-ts';
+import { ScatterJS, ScatterEOS, Action, ScatterAccount } from 'scatter-ts';
 import { JsonRpc, Api } from 'eosjs';
 import { EOSIO_RPC, EOSIO_CHAIN_ID, SCATTER_IDENTIFIER } from "./constants";
-// import fetch from "isomorphic-fetch";
 
 ScatterJS.plugins(new ScatterEOS());
 
@@ -27,8 +26,8 @@ export async function transact(actions: Action[]) {
     return api.transact({ actions }, options);
 }
 
-export function connect() {
-    const connected = ScatterJS.connect(SCATTER_IDENTIFIER, { network });
+export async function connect() {
+    const connected = await ScatterJS.connect(SCATTER_IDENTIFIER, { network, allowHttp: true });
     if (!connected) throw "Can't connect to Scatter";
     return connected;
 }
@@ -38,7 +37,7 @@ export async function login() {
     await connect();
     const id = await ScatterJS.login();
     if (!id) throw "No Scatter ID";
-    const account = ScatterJS.account('eos');
+    const account: ScatterAccount = ScatterJS.account('eos');
     if (!account) throw "No Scatter Account";
     return account;
 };

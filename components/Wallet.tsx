@@ -3,19 +3,31 @@ import styles from '../styles/Home.module.css'
 import * as anchor from "../lib/anchor";
 import * as scatter from "../lib/scatter";
 
-export default function Wallet({ src, alt, protocol = "scatter" } : { src: string, alt: string, protocol?: "scatter" | "anchor" }) {
+export function Login({ setActor, img, name, protocol = "scatter" } : { setActor: any, img: string, name: string, protocol?: "scatter" | "anchor" }) {
     const handleClick = async () => {
-        try {
-            if ( protocol == "scatter" ) await scatter.login();
-            if ( protocol == "anchor" ) await anchor.login();
-        } catch (e) {
-            console.error(e);
-        }
+        let actor = '';
+        if ( protocol == "scatter" ) actor = (await scatter.login()).name;
+        if ( protocol == "anchor" ) actor = (await anchor.login())?.auth.actor.toString() || '';
+        setActor( () => actor );
     }
 
     return (
-        <a className={styles.card} onClick={handleClick}>
-            <h2><Image src={ src } alt={ alt } width={22} height={22} /> { alt }</h2>
+        <a className={styles.card} onClick={ handleClick }>
+            <h2><Image src={ img } alt={ name } width={22} height={22} /> { name }</h2>
+        </a>
+    )
+}
+
+export function Logout({ setActor }: { setActor: any }) {
+    const handleClick = async () => {
+        await scatter.disconnect();
+        await anchor.disconnect();
+        setActor("");
+    }
+
+    return (
+        <a className={styles.card} onClick={ handleClick }>
+            <h2>Logout</h2>
         </a>
     )
 }

@@ -1,10 +1,30 @@
 import type { NextPage } from 'next'
+import { useState } from "react"
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import Wallet from '../components/Wallet'
+import { Login, Logout } from '../components/Wallet'
 
 const Home: NextPage = () => {
+  const [ actor, setActor ] = useState<string>("");
+
+  let wallet = !actor ? (
+    <div className={styles.grid}>
+      <Login setActor={ setActor } img="/anchor.svg" name="Anchor" protocol={"anchor"} />
+      <Login setActor={ setActor } img="/tokenpocket.png" name="TokenPocket" />
+      <Login setActor={ setActor } img="/wombat.png" name="Wombat" />
+      <Login setActor={ setActor } img="/scatter.svg" name="Scatter" />
+      <Login setActor={ setActor } img="/imtoken.png" name="ImToken" />
+      <Login setActor={ setActor } img="/start.png" name="Start" />
+    </div>
+  ) : '';
+
+  let logout = actor ? (
+    <div className={styles.grid}>
+      <Logout setActor={ setActor } />
+    </div>
+  ) : '';
+
   return (
     <div className={styles.container}>
       <Head>
@@ -17,21 +37,13 @@ const Home: NextPage = () => {
         <h1 className={styles.title}>
           EOSIO Wallets
         </h1>
-
         <p className={styles.description}>
-          Get started by selecting one of the wallets.
+          1. Select wallet { actor ? `(${ actor })` : ''}<br/>
+          2. Select amount<br/>
+          3. Push transaction
         </p>
-
-        <div className={styles.grid}>
-
-          <Wallet src="/anchor.svg" alt="Anchor" protocol={"anchor"} />
-          <Wallet src="/tokenpocket.png" alt="TokenPocket" />
-          <Wallet src="/wombat.png" alt="Wombat" />
-          <Wallet src="/scatter.svg" alt="Scatter" />
-          <Wallet src="/imtoken.png" alt="ImToken" />
-          <Wallet src="/start.png" alt="Start" />
-
-        </div>
+        { wallet }
+        { logout }
       </main>
 
       <footer className={styles.footer}>
