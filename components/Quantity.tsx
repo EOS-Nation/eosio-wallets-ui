@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import * as wallet from "../lib/wallet";
-import { transfer, noop } from "../lib/actions";
+import { transfer, ping } from "../lib/actions";
 
 interface QuantityProps {
     setTransactionId: any,
@@ -15,7 +15,8 @@ export function Quantity({ setQuantity, setTransactionId, actor, quantity, proto
     const handleClick = async () => {
         setQuantity(quantity);
         setTransactionId("");
-        const action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈");
+        const action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈 - EOS wallet demo app");
+        // const action = ping( actor );
         const transaction_id = await wallet.pushTransaction([ action ], protocol );
         setTransactionId(transaction_id);
     }

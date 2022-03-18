@@ -1,12 +1,12 @@
 import { Action } from "scatter-ts"
 
-export function transfer(from: string, to: string, quantity: string, memo: string ): Action {
+export function ping(name: string ): Action {
     return {
         account: "pingpong.sx",
         name: "ping",
-        authorization: [ {actor: from, permission: "active"}],
+        authorization: [ {actor: name, permission: "active"} ],
         data: {
-            name, from,
+            name,
         }
     }
 }
@@ -20,16 +20,16 @@ export function noop( ): Action {
     }
 }
 
-// export function transfer(from: string, to: string, quantity: string, memo: string ): Action {
-//     return {
-//         account: "eosio.token",
-//         name: "transfer",
-//         authorization: [ {actor: from, permission: "active"}],
-//         data: {
-//             from,
-//             to,
-//             quantity,
-//             memo,
-//         }
-//     }
-// }
+export function transfer(from: string, to: string, quantity: string, memo: string ): Action {
+    return {
+        account: "eosio.token",
+        name: "transfer",
+        authorization: [ {actor: from, permission: "active"} ],
+        data: {
+            from,
+            to,
+            quantity,
+            memo,
+        }
+    }
+}
