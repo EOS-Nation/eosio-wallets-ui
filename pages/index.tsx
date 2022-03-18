@@ -48,11 +48,11 @@ const Home: NextPage = () => {
 
       <footer className={styles.footer}>
         <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          href="https://github.com/dotGems/eosio-wallets"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by <Image src="/EOSIO.svg" alt="EOSIO" width={24} height={24} color={"black"} /> EOSIO
+          Source code . <Image src="/github.svg" alt="GitHub" width={24} height={24} />
         </a>
       </footer>
     </div>
