@@ -25,7 +25,7 @@ async function handleAnchor(actions: Action[]) {
   const session = await anchor.login();
   if (!session) return "";
   const { transaction } = await session.transact({ actions });
-  return transaction.id;
+  return transaction.id.toString();
 }
 
 export function pushTransaction(actions: Action[], walletProtocol = "anchor") {

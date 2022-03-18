@@ -3,12 +3,23 @@ import styles from '../styles/Home.module.css'
 import * as anchor from "../lib/anchor";
 import * as scatter from "../lib/scatter";
 
-export function Login({ setActor, img, name, protocol = "scatter" } : { setActor: any, img: string, name: string, protocol?: "scatter" | "anchor" }) {
+interface LoginProps {
+    setProtocol: any,
+    setActor: any,
+    img: string,
+    name: string,
+    protocol?: "scatter" | "anchor"
+}
+
+export function Login({ setProtocol, setActor, img, name, protocol = "scatter" } : LoginProps ) {
     const handleClick = async () => {
         let actor = '';
         if ( protocol == "scatter" ) actor = (await scatter.login()).name;
         if ( protocol == "anchor" ) actor = (await anchor.login())?.auth.actor.toString() || '';
-        setActor( () => actor );
+        if ( actor ) {
+            setActor( () => actor );
+            setProtocol( () => protocol );
+        }
     }
 
     return (
@@ -18,11 +29,12 @@ export function Login({ setActor, img, name, protocol = "scatter" } : { setActor
     )
 }
 
-export function Logout({ setActor }: { setActor: any }) {
+export function Logout({ setActor, setProtocol }: { setActor: any, setProtocol: any }) {
     const handleClick = async () => {
         await scatter.disconnect();
         await anchor.disconnect();
         setActor("");
+        setProtocol("");
     }
 
     return (
