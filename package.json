@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@greymass/eosio": "^0.5.4",
     "anchor-link": "^3.3.8",
     "anchor-link-browser-transport": "^3.2.5",
     "eosjs": "^22.1.0",

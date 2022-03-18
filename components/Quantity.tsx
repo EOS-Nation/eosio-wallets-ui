@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import * as wallet from "../lib/wallet";
-import { transfer } from "../lib/actions";
+import { transfer, noop } from "../lib/actions";
 
 interface QuantityProps {
     setTransactionId: any,
@@ -14,6 +14,7 @@ interface QuantityProps {
 export function Quantity({ setQuantity, setTransactionId, actor, quantity, protocol } : QuantityProps ) {
     const handleClick = async () => {
         setQuantity(quantity);
+        setTransactionId("");
         const action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈");
         const transaction_id = await wallet.pushTransaction([ action ], protocol );
         setTransactionId(transaction_id);
