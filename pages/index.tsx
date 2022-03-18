@@ -38,7 +38,7 @@ const Home: NextPage = () => {
           EOS Wallets
         </h1>
         <p className={styles.description}>
-          1. Select wallet { actor ? `(${ actor })` : ''}<br/>
+          1. Select wallet { actor ? <span className={styles.actor}>{ actor }</span> : ''}<br/>
           2. Select amount<br/>
           3. Push transaction
         </p>
