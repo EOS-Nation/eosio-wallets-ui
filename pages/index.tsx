@@ -11,8 +11,8 @@ const Home: NextPage = () => {
   let wallet = !actor ? (
     <div className={styles.grid}>
       <Login setActor={ setActor } img="/anchor.svg" name="Anchor" protocol={"anchor"} />
-      <Login setActor={ setActor } img="/tokenpocket.png" name="TokenPocket" />
       <Login setActor={ setActor } img="/wombat.png" name="Wombat" />
+      <Login setActor={ setActor } img="/tokenpocket.png" name="TokenPocket" />
       <Login setActor={ setActor } img="/scatter.svg" name="Scatter" />
       <Login setActor={ setActor } img="/imtoken.png" name="ImToken" />
       <Login setActor={ setActor } img="/start.png" name="Start" />
@@ -28,14 +28,14 @@ const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>EOSIO Wallet</title>
-        <meta name="description" content="EOSIO wallet integration" />
+        <title>EOS Wallets</title>
+        <meta name="description" content="EOS wallets" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          EOSIO Wallets
+          EOS Wallets
         </h1>
         <p className={styles.description}>
           1. Select wallet { actor ? `(${ actor })` : ''}<br/>
