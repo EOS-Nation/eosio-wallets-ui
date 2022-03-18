@@ -33,7 +33,7 @@ export function Transaction({ transaction_id } : { transaction_id: string | unde
     let message = confirmed ? `🎉 Success ` : '🕗 Confirming... '
     return (
         <span>
-            {message} <a target="_blank" href={ url }><Highlight str={ slice(transaction_id) } /></a>
+            {message} <a target="_blank" rel="noopener noreferrer" href={ url }><Highlight str={ slice(transaction_id) } /></a>
         </span>
     )
 }
