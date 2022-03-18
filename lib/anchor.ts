@@ -22,7 +22,7 @@ export async function getAccount() {
 export async function disconnect() {
   console.log("anchor::disconnect");
   try {
-    await link.clearSessions("pomelo.io");
+    await link.clearSessions(ANCHOR_IDENTIFIER);
   } catch (err) {
     console.log("anchor::disconnect", {err});
   }
@@ -38,7 +38,7 @@ function sessionToAccount( session: LinkSession | null ) {
 
 export async function login() {
   console.log("anchor::login");
-  const sessions = await link.listSessions("pomelo.io");
-  if (sessions.length) return await link.restoreSession("pomelo.io");
-  else return (await link.login("pomelo.io")).session
+  const sessions = await link.listSessions(ANCHOR_IDENTIFIER);
+  if (sessions.length) return await link.restoreSession(ANCHOR_IDENTIFIER);
+  else return (await link.login(ANCHOR_IDENTIFIER)).session
 }

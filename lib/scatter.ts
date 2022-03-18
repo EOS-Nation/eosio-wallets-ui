@@ -3,6 +3,7 @@ import { JsonRpc, Api } from 'eosjs';
 import { EOSIO_RPC, EOSIO_CHAIN_ID, SCATTER_IDENTIFIER } from "./constants";
 
 ScatterJS.plugins(new ScatterEOS());
+global.fetch = fetch;
 
 const { host, protocol } = new URL(EOSIO_RPC);
 export const network = ScatterJS.Network.fromJson({
