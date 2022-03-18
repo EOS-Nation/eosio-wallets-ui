@@ -57,7 +57,7 @@ const Home: NextPage = () => {
         <p className={styles.description}>
           { protocol ? "✅" : '1. Select' } Wallet <Highlight str={ protocol } /><br/>
           { actor ? "✅" : '2. Login' } Account <Highlight str={ actor } /><br/>
-          { quantity ? "✅" : '3. Select' } Quantity <Highlight str={ quantity } /><br/>
+          { actor && quantity ? "✅" : '3. Select' } Quantity <Highlight str={ actor ? quantity : "" } /><br/>
           <Transaction transaction_id={ transaction_id } />
         </p>
         { wallets }
