@@ -75,8 +75,8 @@
 
 .card {
   cursor: pointer;
-  margin: 0.5rem;
-  padding: 1rem;
+  margin: 0.25rem;
+  padding: 0.75rem;
   text-align: left;
   vertical-align: bottom;
   color: inherit;
@@ -85,6 +85,9 @@
   border-radius: 10px;
   transition: color 0.15s ease, border-color 0.15s ease;
   max-width: 300px;
+  min-width: 200px;
+  text-align: center;
+  background-color: white;
 }
 
 .card:hover,
@@ -96,12 +99,12 @@
 
 .card h2 {
   margin: 0 0 0 0;
-  font-size: 1.5rem;
+  font-size: 1.30rem;
 }
 
 .card p {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.00rem;
   line-height: 1.5;
 }
 

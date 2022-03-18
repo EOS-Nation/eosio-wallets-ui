@@ -12,7 +12,7 @@ const Home: NextPage = () => {
     <div className={styles.grid}>
       <Login setActor={ setActor } img="/anchor.svg" name="Anchor" protocol={"anchor"} />
       <Login setActor={ setActor } img="/wombat.png" name="Wombat" />
-      <Login setActor={ setActor } img="/tokenpocket.png" name="TokenPocket" />
+      <Login setActor={ setActor } img="/tokenpocket.png" name="TP" />
       <Login setActor={ setActor } img="/scatter.svg" name="Scatter" />
       <Login setActor={ setActor } img="/imtoken.png" name="ImToken" />
       <Login setActor={ setActor } img="/start.png" name="Start" />
