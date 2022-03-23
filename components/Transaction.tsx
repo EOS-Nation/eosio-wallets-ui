@@ -16,20 +16,20 @@ export function Transaction({ transaction_id } : { transaction_id: string | unde
     const [ fail, setFail ] = useState<boolean>(false);
     if ( !transaction_id ) return <span>4. Approve Transfer</span>
 
-    async function confirm_transaction( retry = 10 ) {
+    async function confirm_transaction( retry = 0 ) {
         if ( confirmed || fail ) return;
         console.log("Transaction::confirm_transaction: ", {transaction_id, retry});
-        if ( retry <= 0 ) {
+        if ( retry >= 10 ) {
             setFail(true);
             return;
         }
         try {
+            await timeout(5000);
             await get_transaction( transaction_id || '' );
             setConfirmed(true);
         } catch (e) {
             console.error(e);
-            await timeout(3000);
-            confirm_transaction( retry - 1 );
+            confirm_transaction( retry + 1 );
         }
     }
     confirm_transaction();
