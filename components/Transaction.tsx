@@ -24,11 +24,11 @@ export function Transaction({ transaction_id } : { transaction_id: string | unde
             return;
         }
         try {
-            await timeout(2000 * (10 - retry) );
             await get_transaction( transaction_id || '' );
             setConfirmed(true);
         } catch (e) {
             console.error(e);
+            await timeout(3000);
             confirm_transaction( retry - 1 );
         }
     }
