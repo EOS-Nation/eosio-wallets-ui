@@ -16,7 +16,7 @@ export function Transaction({ transaction_id } : { transaction_id: string | unde
     const [ fail, setFail ] = useState<boolean>(false);
     if ( !transaction_id ) return <span>4. Approve Transfer</span>
 
-    async function confirm_transaction( retry = 5 ) {
+    async function confirm_transaction( retry = 10 ) {
         if ( confirmed || fail ) return;
         console.log("Transaction::confirm_transaction: ", {transaction_id, retry});
         if ( retry <= 0 ) {
@@ -24,7 +24,7 @@ export function Transaction({ transaction_id } : { transaction_id: string | unde
             return;
         }
         try {
-            await timeout(1000 * retry);
+            await timeout(2000 * (10 - retry) );
             await get_transaction( transaction_id || '' );
             setConfirmed(true);
         } catch (e) {
