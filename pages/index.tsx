@@ -22,6 +22,7 @@ const Home: NextPage = () => {
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/scatter.svg" name="Scatter" />
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/imtoken.png" name="ImToken" />
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/start.png" name="Start" />
+      <Login setProtocol={ setProtocol } setActor={ setActor } img="/metahub.png" name="Metahub" />
     </div>
   ) : '';
 
