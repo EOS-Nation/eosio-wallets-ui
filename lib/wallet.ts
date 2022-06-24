@@ -3,7 +3,7 @@ import * as scatter from "./scatter";
 import * as storage from "./storage";
 // import * as analytics from "./analytics";
 import { Action } from "scatter-ts";
-import { ABIDef, PermissionLevel, Signature, SignedTransaction, Transaction, PrivateKey, Serializer, Checksum256, PackedTransaction } from "anchor-link";
+import { ABIDef, PermissionLevel, Signature, SignedTransaction, Transaction, PrivateKey, Serializer, Checksum256, PackedTransaction, ABI } from "anchor-link";
 
 export interface Wallet {
   actor: string;
@@ -21,30 +21,6 @@ async function handleScatter(actions: Action[]) {
   return transaction_id;
 }
 
-
-async function cosignTransaction(trx: Transaction, auth: PermissionLevel): Promise<{transaction: Transaction, signatures: Signature[]}> {
-
-  // return { transaction: trx, signatures: []}
-  console.log('🪰', JSON.stringify(trx.toJSON()))
-  const resp = await fetch("http://localhost:8080/cosign_trx", {
-    "headers": {
-      "accept": "*/*",
-      "content-type": "application/json",
-    },
-    "body": `{\"ref\":\"pomelo\",\"transaction\":${JSON.stringify(trx.toJSON())},\"signer\":{\"actor\":\"${auth.actor}\",\"permission\":\"${auth.permission}\"}}`,
-    "method": "POST"
-  });
-  const { data } = await resp.json();
-
-  console.log('🐠', data)
-
-  return {
-    transaction: Transaction.from(data.transaction),
-    signatures: data.signatures.map((sign: string) => Signature.from(sign))
-  };
-}
-
-
 const PayAction: Action = {
       account: "test.sx",
       name: "pay",
@@ -57,6 +33,30 @@ const PayPrivateKey = PrivateKey.from(
     '5J2JURhtkcgLezYzZzVBy3QMWPsQrvRXfHe8BRXy1DbADRJLZR4'
 )
 
+
+const PayAbi = ABI.from({
+  version: 'eosio::abi/1.1',
+  types: [],
+  structs: [
+      {
+      name: 'pay',
+      base: '',
+      fields: []
+      }
+  ],
+  actions: [
+      {
+          name: 'pay',
+          type: 'pay',
+          ricardian_contract: 'This action does nothing.'
+      }
+  ],
+  tables: [],
+  ricardian_clauses: [],
+  variants: []
+})
+
+
 async function handleAnchor(actions: Action[]) {
   console.log('lib/wallet::handleAnchor', { actions });
   const session = await anchor.login();
@@ -68,24 +68,27 @@ async function handleAnchor(actions: Action[]) {
   const header = info.getTransactionHeader(300) // 300 = seconds this cosigned transaction is valid for
   console.log('🐏', header)
 
-  const modifiedActions = [
-    PayAction,
-    ... actions
-  ];
-
-  const abis = await Promise.all(modifiedActions.map(act => session.client.v1.chain.get_abi(act.account)))
+  const abis = await Promise.all(actions.map(act => session.client.v1.chain.get_abi(act.account)))
 
   const trx = Transaction.from({
       ...header,
-      actions: modifiedActions
+      actions: [
+        PayAction,
+        ... actions
+      ]
     },
-    abis.map((abi: any) => ({ contract: abi.account_name, abi: abi.abi as ABIDef}))
+    [
+      { contract: PayAction.account, abi: PayAbi as ABIDef },
+      ...abis.map((abi: any) => ({ contract: abi.account_name, abi: abi.abi as ABIDef}))
+    ]
   );
   console.log('🦖', trx)
 
+  // sign trx with pay signature
   const paySignature = PayPrivateKey.signDigest(trx.signingDigest(Checksum256.from(session.chainId)))
   console.log('🥒', paySignature)
 
+  // request signature from Anchor wallet without broadcasting
   const result = await session.transact({ transaction: trx }, { broadcast: false });
   console.log('🐞', result)
 
@@ -100,6 +103,7 @@ async function handleAnchor(actions: Action[]) {
 
   console.log('🦂', JSON.stringify(signedTransaction.toJSON(), null, 2));
 
+  // push on chain
   const response = await session.client.v1.chain.push_transaction( signedTransaction )
 
   console.log('🐡', response)
