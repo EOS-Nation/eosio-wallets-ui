@@ -56,6 +56,7 @@ async function handleAnchor(actions: Action[]) {
     ...actions.map(action => session.client.v1.chain.get_abi(action.account))
   ]);
 
+  // build the inital transaction
   const trx = Transaction.from({
       ...info.getTransactionHeader(300),
       actions
@@ -63,11 +64,13 @@ async function handleAnchor(actions: Action[]) {
     abis.map(abi => ({ contract: abi.account_name, abi: abi.abi as ABIDef }))
   );
 
+  // query backend for signed transaction with prepended noop action
   const cosigned = await cosignTransactionBackend(trx, session.auth);
 
+  // submit to anchor for user to sign without broadcasting
   const result = await session.transact({ transaction: cosigned.transaction }, { broadcast: false });
 
-  // Sign the modified transaction
+  // merge signatures
   const signedTransaction = SignedTransaction.from({
     ...result.transaction,
     signatures: [
@@ -76,6 +79,7 @@ async function handleAnchor(actions: Action[]) {
     ]
   })
 
+  // broadcast the transaction
   const response = await session.client.v1.chain.push_transaction( signedTransaction )
 
   return response.transaction_id;
