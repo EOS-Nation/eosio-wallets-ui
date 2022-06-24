@@ -11,6 +11,14 @@ export function ping(name: string ): Action {
     }
 }
 
+// Private key: 5J2JURhtkcgLezYzZzVBy3QMWPsQrvRXfHe8BRXy1DbADRJLZR4
+// Public key: EOS6aGjvnF854ozi1GnNoGGHMKr7R5n5bAtHqszT2aTSufTyZZJxn
+
+// dcleos set account permission test.sx pay EOS6aGjvnF854ozi1GnNoGGHMKr7R5n5bAtHqszT2aTSufTyZZJxn active
+// dcleos set action permission test.sx test.sx pay pay
+
+
+
 export function noop( ): Action {
     return {
         account: "greymassnoop",

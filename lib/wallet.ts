@@ -3,7 +3,7 @@ import * as scatter from "./scatter";
 import * as storage from "./storage";
 // import * as analytics from "./analytics";
 import { Action } from "scatter-ts";
-import { PermissionLevel, Signature, SignedTransaction, Transaction } from "anchor-link";
+import { ABIDef, PermissionLevel, Signature, SignedTransaction, Transaction, PrivateKey, Serializer, Checksum256, PackedTransaction } from "anchor-link";
 
 export interface Wallet {
   actor: string;
@@ -44,6 +44,19 @@ async function cosignTransaction(trx: Transaction, auth: PermissionLevel): Promi
   };
 }
 
+
+const PayAction: Action = {
+      account: "test.sx",
+      name: "pay",
+      authorization: [ {actor: "test.sx", permission: "pay"}],
+      data: {}
+}
+
+// The private key used to sign transactions for the resource provider
+const PayPrivateKey = PrivateKey.from(
+    '5J2JURhtkcgLezYzZzVBy3QMWPsQrvRXfHe8BRXy1DbADRJLZR4'
+)
+
 async function handleAnchor(actions: Action[]) {
   console.log('lib/wallet::handleAnchor', { actions });
   const session = await anchor.login();
@@ -51,33 +64,39 @@ async function handleAnchor(actions: Action[]) {
 
   console.log('🦐', session, session.auth.toString())
 
-  const [ info, abis ] = await Promise.all([
-    session.client.v1.chain.get_info(),
-    session.client.v1.chain.get_abi(actions[0].account)
-  ]);
+  const info = await session.client.v1.chain.get_info();
   const header = info.getTransactionHeader(300) // 300 = seconds this cosigned transaction is valid for
   console.log('🐏', header)
 
+  const modifiedActions = [
+    PayAction,
+    ... actions
+  ];
+
+  const abis = await Promise.all(modifiedActions.map(act => session.client.v1.chain.get_abi(act.account)))
+
   const trx = Transaction.from({
-    ...header,
-    actions
-  }, abis.abi);
+      ...header,
+      actions: modifiedActions
+    },
+    abis.map((abi: any) => ({ contract: abi.account_name, abi: abi.abi as ABIDef}))
+  );
   console.log('🦖', trx)
 
-  const { transaction, signatures } = await cosignTransaction( trx, session.auth );
-  console.log('🥒', transaction, signatures)
+  const paySignature = PayPrivateKey.signDigest(trx.signingDigest(Checksum256.from(session.chainId)))
+  console.log('🥒', paySignature)
 
-  console.log('🍅', JSON.stringify(transaction.toJSON(), null, 2))
-  const result = await session.transact({ transaction }, { broadcast: false });
+  const result = await session.transact({ transaction: trx }, { broadcast: false });
   console.log('🐞', result)
 
-  // Sign the modified transaction
-  const signedTransaction = SignedTransaction.from( result.transaction )
-
-  signedTransaction.signatures = [
-    ...result.signatures,
-    ...signatures,
-  ]
+  // merge pay signature + user signature
+  const signedTransaction = SignedTransaction.from({
+      ...result.transaction,
+      signatures: [
+        ...result.signatures,
+        paySignature,
+      ]
+  })
 
   console.log('🦂', JSON.stringify(signedTransaction.toJSON(), null, 2));
 
