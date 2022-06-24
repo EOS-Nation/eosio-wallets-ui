@@ -3,6 +3,7 @@ import * as scatter from "./scatter";
 import * as storage from "./storage";
 // import * as analytics from "./analytics";
 import { Action } from "scatter-ts";
+import { PermissionLevel, Signature, SignedTransaction, Transaction } from "anchor-link";
 
 export interface Wallet {
   actor: string;
@@ -20,12 +21,71 @@ async function handleScatter(actions: Action[]) {
   return transaction_id;
 }
 
+
+async function cosignTransaction(trx: Transaction, auth: PermissionLevel): Promise<{transaction: Transaction, signatures: Signature[]}> {
+
+  // return { transaction: trx, signatures: []}
+  console.log('🪰', JSON.stringify(trx.toJSON()))
+  const resp = await fetch("http://localhost:8080/cosign_trx", {
+    "headers": {
+      "accept": "*/*",
+      "content-type": "application/json",
+    },
+    "body": `{\"ref\":\"pomelo\",\"transaction\":${JSON.stringify(trx.toJSON())},\"signer\":{\"actor\":\"${auth.actor}\",\"permission\":\"${auth.permission}\"}}`,
+    "method": "POST"
+  });
+  const { data } = await resp.json();
+
+  console.log('🐠', data)
+
+  return {
+    transaction: Transaction.from(data.transaction),
+    signatures: data.signatures.map((sign: string) => Signature.from(sign))
+  };
+}
+
 async function handleAnchor(actions: Action[]) {
   console.log('lib/wallet::handleAnchor', { actions });
   const session = await anchor.login();
   if (!session) return "";
-  const { transaction } = await session.transact({ actions });
-  return transaction.id.toString();
+
+  console.log('🦐', session, session.auth.toString())
+
+  const [ info, abis ] = await Promise.all([
+    session.client.v1.chain.get_info(),
+    session.client.v1.chain.get_abi(actions[0].account)
+  ]);
+  const header = info.getTransactionHeader(300) // 300 = seconds this cosigned transaction is valid for
+  console.log('🐏', header)
+
+  const trx = Transaction.from({
+    ...header,
+    actions
+  }, abis.abi);
+  console.log('🦖', trx)
+
+  const { transaction, signatures } = await cosignTransaction( trx, session.auth );
+  console.log('🥒', transaction, signatures)
+
+  console.log('🍅', JSON.stringify(transaction.toJSON(), null, 2))
+  const result = await session.transact({ transaction }, { broadcast: false });
+  console.log('🐞', result)
+
+  // Sign the modified transaction
+  const signedTransaction = SignedTransaction.from( result.transaction )
+
+  signedTransaction.signatures = [
+    ...result.signatures,
+    ...signatures,
+  ]
+
+  console.log('🦂', JSON.stringify(signedTransaction.toJSON(), null, 2));
+
+  const response = await session.client.v1.chain.push_transaction( signedTransaction )
+
+  console.log('🐡', response)
+
+  return response.transaction_id;
 }
 
 export function pushTransaction(actions: Action[], walletProtocol = "anchor") {

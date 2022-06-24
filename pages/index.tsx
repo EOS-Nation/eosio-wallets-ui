@@ -33,7 +33,7 @@ const Home: NextPage = () => {
       <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.2500 EOS" } actor={ actor } protocol={ protocol } />
       <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.1000 EOS" } actor={ actor } protocol={ protocol } />
       <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.0500 EOS" } actor={ actor } protocol={ protocol } />
-      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.0250 EOS" } actor={ actor } protocol={ protocol } />
+      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.0001 EOS" } actor={ actor } protocol={ protocol } />
     </div>
   ) : '';
 
