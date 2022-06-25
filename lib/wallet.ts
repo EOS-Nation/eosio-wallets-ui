@@ -5,7 +5,7 @@ import * as storage from "./storage";
 import { Action } from "scatter-ts";
 import { ABI, ABIDef, Checksum256, PermissionLevel, PrivateKey, Signature, SignedTransaction, Transaction } from "anchor-link";
 
-const COSIGN_ENDPOINT = "http://localhost:8080/cosign_trx"
+const COSIGN_ENDPOINT = "http://localhost:8080/cosign"
 export interface Wallet {
   actor: string;
   permission: string;
@@ -35,6 +35,9 @@ async function cosignTransactionBackend(transaction: Transaction, signer: Permis
     }),
     method: "POST"
   });
+
+  if(resp.status != 200) return { transaction, signatures: [] };
+
   const { data } = await resp.json();
 
   return {
