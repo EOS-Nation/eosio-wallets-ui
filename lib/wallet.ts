@@ -5,7 +5,7 @@ import * as storage from "./storage";
 import { Action } from "scatter-ts";
 import { ABI, ABIDef, Checksum256, PermissionLevel, PrivateKey, Signature, SignedTransaction, Transaction } from "anchor-link";
 
-const COSIGN_ENDPOINT = "http://localhost:8080/cosign"
+const COSIGN_ENDPOINT = "https://us-central1-eosn-functions.cloudfunctions.net/freecpu/v1/freecpu/cosign"
 export interface Wallet {
   actor: string;
   permission: string;
@@ -24,7 +24,6 @@ async function handleScatter(actions: Action[]) {
 
 async function cosignTransactionBackend(transaction: Transaction, signer: PermissionLevel): Promise<{transaction: Transaction, signatures: Signature[]}> {
 
-  // return { transaction: trx, signatures: []}
   const resp = await fetch(COSIGN_ENDPOINT, {
     headers: {
       "content-type": "application/json",
