@@ -5,7 +5,7 @@ import * as storage from "./storage";
 import { Action } from "scatter-ts";
 import { ABI, ABIDef, Checksum256, PermissionLevel, PrivateKey, Signature, SignedTransaction, Transaction } from "anchor-link";
 
-const COSIGN_ENDPOINT = "https://edge.pomelo.io/api/freecpu/cosign"
+const COSIGN_ENDPOINT = "https://edge.pomelo.io/api/cosign"
 export interface Wallet {
   actor: string;
   permission: string;
