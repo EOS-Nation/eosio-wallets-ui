@@ -5,7 +5,7 @@ import * as storage from "./storage";
 import { Action } from "scatter-ts";
 import { ABI, ABIDef, Checksum256, PermissionLevel, PrivateKey, Signature, SignedTransaction, Transaction } from "anchor-link";
 
-const COSIGN_ENDPOINT = "https://edge.pomelo.io/api/cosign"
+const COSIGN_ENDPOINT = "http://localhost:8080/cosign"
 export interface Wallet {
   actor: string;
   permission: string;
@@ -22,7 +22,7 @@ async function handleScatter(actions: Action[]) {
   return transaction_id;
 }
 
-async function cosignTransactionBackend(transaction: Transaction, signer: PermissionLevel): Promise<{transaction: Transaction, signatures: Signature[]}> {
+async function cosignTransactionBackend(actions: Action[]): Promise<{transaction: any, signatures: string[]} | undefined> {
 
   try {
     const resp = await fetch(COSIGN_ENDPOINT, {
@@ -30,24 +30,25 @@ async function cosignTransactionBackend(transaction: Transaction, signer: Permis
         "content-type": "application/json",
       },
       body: JSON.stringify({
-          signer,
-          transaction,
+          transaction: {
+            actions
+          },
       }),
       method: "POST"
     });
 
-    if(resp.status != 200) return { transaction, signatures: [] };
+    if(resp.status != 200) throw `Failed to fetch trx from ${COSIGN_ENDPOINT}. Status: ${resp.status}`;
 
     const { data } = await resp.json();
 
     return {
-      transaction: Transaction.from(data.transaction),
-      signatures: data.signatures.map((sign: string) => Signature.from(sign))
+      transaction: data.transaction,
+      signatures: data.signatures
     };
   }
-  catch (err) {
-    console.log(`cosignTransactionBackend(): Failed to fetch free cpu at '${COSIGN_ENDPOINT}'. Error: `, err.message ?? err)
-    return { transaction, signatures: [] };
+  catch (err: any) {
+    console.log(`handleAnchor(): Failed to fetch free cpu.`, err.message ?? err)
+    return undefined;
   }
 }
 
@@ -58,39 +59,26 @@ async function handleAnchor(actions: Action[]) {
   const session = await anchor.login();
   if (!session) return "";
 
-  // get ABIs for unique action contracts
-  const contracts = [...new Set(actions.map(action => action.account))];
-
-  const [info, ...abis] = await Promise.all<any>([
-    session.client.v1.chain.get_info(),
-    ...contracts.map(contract => session.client.v1.chain.get_abi(contract))
-  ]);
-
-  // build the inital transaction
-  const trx = Transaction.from({
-      ...info.getTransactionHeader(300),
-      actions
-    },
-    abis.map(abi => ({ contract: abi.account_name, abi: abi.abi as ABIDef }))
-  );
-
-  // query backend for signed transaction with prepended noop action
-  const cosigned = await cosignTransactionBackend(trx, session.auth);
+  const cosigned = await cosignTransactionBackend(actions);
+  if (!cosigned) {
+    // if failed to cosign - just sign via wallet
+    const { transaction } = await session.transact({ actions });
+    return transaction.id.toString();
+  }
 
   // submit to anchor for user to sign without broadcasting
-  const result = await session.transact({ transaction: cosigned.transaction }, { broadcast: false });
+  const local = await session.transact({ ... cosigned.transaction }, { broadcast: false });
 
-  // merge signatures
-  const signedTransaction = SignedTransaction.from({
-    ...result.transaction,
-    signatures: [
-      ...result.signatures,
-      ...cosigned.signatures,
-    ]
-  })
-
-  // broadcast the transaction
-  const response = await session.client.v1.chain.push_transaction( signedTransaction )
+  // merge signatures and broadcast the transaction
+  const response = await session.client.v1.chain.push_transaction(
+    SignedTransaction.from({
+      ...local.transaction,
+      signatures: [
+        ...local.signatures,
+        ...cosigned.signatures,
+      ]
+    })
+  );
 
   return response.transaction_id;
 }
