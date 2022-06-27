@@ -24,25 +24,31 @@ async function handleScatter(actions: Action[]) {
 
 async function cosignTransactionBackend(transaction: Transaction, signer: PermissionLevel): Promise<{transaction: Transaction, signatures: Signature[]}> {
 
-  const resp = await fetch(COSIGN_ENDPOINT, {
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-        signer,
-        transaction,
-    }),
-    method: "POST"
-  });
+  try {
+    const resp = await fetch(COSIGN_ENDPOINT, {
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+          signer,
+          transaction,
+      }),
+      method: "POST"
+    });
 
-  if(resp.status != 200) return { transaction, signatures: [] };
+    if(resp.status != 200) return { transaction, signatures: [] };
 
-  const { data } = await resp.json();
+    const { data } = await resp.json();
 
-  return {
-    transaction: Transaction.from(data.transaction),
-    signatures: data.signatures.map((sign: string) => Signature.from(sign))
-  };
+    return {
+      transaction: Transaction.from(data.transaction),
+      signatures: data.signatures.map((sign: string) => Signature.from(sign))
+    };
+  }
+  catch (err) {
+    console.log(`cosignTransactionBackend(): Failed to fetch free cpu at '${COSIGN_ENDPOINT}'. Error: `, err.message ?? err)
+    return { transaction, signatures: [] };
+  }
 }
 
 
@@ -52,10 +58,12 @@ async function handleAnchor(actions: Action[]) {
   const session = await anchor.login();
   if (!session) return "";
 
-  // get chain info and ABIs for action contracts
-  const [ info, ...abis ] = await Promise.all([
+  // get ABIs for unique action contracts
+  const contracts = [...new Set(actions.map(action => action.account))];
+
+  const [info, ...abis] = await Promise.all<any>([
     session.client.v1.chain.get_info(),
-    ...actions.map(action => session.client.v1.chain.get_abi(action.account))
+    ...contracts.map(contract => session.client.v1.chain.get_abi(contract))
   ]);
 
   // build the inital transaction
