@@ -15,13 +15,6 @@ export interface Wallet {
   chain: string;
 }
 
-async function handleScatter(actions: Action[]) {
-  console.log('lib/wallet::handleScatter', { actions });
-  await scatter.login();
-  const { transaction_id } = (await scatter.transact(actions) as any)
-  return transaction_id;
-}
-
 async function cosignTransactionBackend(actions: Action[]): Promise<{transaction: any, signatures: string[]} | undefined> {
 
   try {
@@ -52,6 +45,28 @@ async function cosignTransactionBackend(actions: Action[]): Promise<{transaction
   }
 }
 
+
+async function handleScatter(actions: Action[]) {
+  console.log('lib/wallet::handleScatter', { actions });
+  await scatter.login();
+
+  const cosigned = await cosignTransactionBackend(actions);
+  console.log('🐡', cosigned)
+  if (!cosigned) {
+    // if failed to cosign - just sign via wallet
+    const { transaction_id } = (await scatter.transact(actions) as any)
+    return transaction_id;
+  }
+
+  // const act = cosigned.transaction.actions.shift();
+  const signed = await scatter.sign(cosigned.transaction)
+  console.log('🐙', signed)
+  signed.signatures.unshift( cosigned.signatures[0] )
+
+  const response = await scatter.push(signed)
+
+  return response.transaction_id;
+}
 
 
 async function handleAnchor(actions: Action[]) {

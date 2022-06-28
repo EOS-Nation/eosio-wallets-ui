@@ -1,6 +1,8 @@
 import { ScatterJS, ScatterEOS, Action, ScatterAccount } from 'scatter-ts';
 import { JsonRpc, Api } from 'eosjs';
 import { EOSIO_RPC, EOSIO_CHAIN_ID, SCATTER_IDENTIFIER } from "./constants";
+import { Transaction, TransactResult } from 'eosjs/dist/eosjs-api-interfaces';
+import { PushTransactionArgs } from 'eosjs/dist/eosjs-rpc-interfaces';
 
 ScatterJS.plugins(new ScatterEOS());
 global.fetch = fetch;
@@ -25,6 +27,36 @@ export async function transact(actions: Action[]) {
     const options = { blocksBehind: 3, expireSeconds: 30 };
     const api = getApi();
     return api.transact({ actions }, options);
+}
+
+
+export async function sign(transaction: Transaction) {
+  console.log(`scatter::transact:actions: ${JSON.stringify(transaction, null, 2)}`);
+  const api = getApi();
+  // init ABIs, serialize trx
+  const serializedTransaction = api.serializeTransaction(transaction);
+
+  // get keys
+  const requiredKeys = await api.signatureProvider.getAvailableKeys()
+  const signArgs = {
+    chainId: api.chainId,
+    requiredKeys,
+    serializedTransaction,
+    abis: [],
+  }
+  console.log('🐍', signArgs)
+  // sign trx
+  const pushTransactionArgs = await api.signatureProvider.sign(signArgs)
+
+  console.log('🐳', pushTransactionArgs)
+  return pushTransactionArgs;
+}
+
+
+export async function push(transaction: PushTransactionArgs) {
+  console.log(`scatter::push:transaction: ${JSON.stringify(transaction, null, 2)}`);
+  const api = getApi();
+  return await api.pushSignedTransaction(transaction) as TransactResult;
 }
 
 export async function connect() {
