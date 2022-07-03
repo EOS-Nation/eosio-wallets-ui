@@ -26,6 +26,7 @@ export async function transact(actions: Action[]) {
     console.log(`scatter::transact:actions: ${JSON.stringify(actions, null, 2)}`);
     const options = { blocksBehind: 3, expireSeconds: 30 };
     const api = getApi();
+
     return api.transact({ actions }, options);
 }
 
@@ -35,7 +36,7 @@ export async function sign(transaction: Transaction) {
   const api = getApi();
   // init ABIs, serialize trx
   const serializedTransaction = api.serializeTransaction(transaction);
-
+  // const abis = await Promise.all(transaction.actions.map(async action => api.abiProvider.getRawAbi(action.account)));
   // get keys
   const requiredKeys = await api.signatureProvider.getAvailableKeys()
   const signArgs = {
@@ -44,8 +45,10 @@ export async function sign(transaction: Transaction) {
     serializedTransaction,
     abis: [],
   }
+
   console.log('🐍', signArgs)
   // sign trx
+
   const pushTransactionArgs = await api.signatureProvider.sign(signArgs)
 
   console.log('🐳', pushTransactionArgs)

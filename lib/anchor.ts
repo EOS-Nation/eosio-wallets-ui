@@ -5,7 +5,10 @@ import { EOSIO_RPC, EOSIO_CHAIN_ID, ANCHOR_FUEL_REFERRER, ANCHOR_IDENTIFIER } fr
 global.fetch = fetch;
 
 export const link = new AnchorLink({
-    transport: new AnchorLinkBrowserTransport({fuelReferrer: ANCHOR_FUEL_REFERRER}),
+    transport: new AnchorLinkBrowserTransport({
+      fuelReferrer: ANCHOR_FUEL_REFERRER,
+      requestStatus: false,
+    }),
     chains: [
         {
             chainId: EOSIO_CHAIN_ID,

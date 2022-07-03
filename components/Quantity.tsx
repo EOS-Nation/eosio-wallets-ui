@@ -9,10 +9,11 @@ interface QuantityProps {
     setQuantity: any,
     actor: string,
     quantity: string,
+    cosign: boolean,
     protocol: "scatter" | "anchor" | undefined
 }
 
-export function Quantity({ setQuantity, setTransactionId, actor, quantity, protocol } : QuantityProps ) {
+export function Quantity({ setQuantity, setTransactionId, actor, quantity, cosign, protocol } : QuantityProps ) {
     const router = useRouter();
 
     const handleClick = async () => {
@@ -20,7 +21,7 @@ export function Quantity({ setQuantity, setTransactionId, actor, quantity, proto
         setTransactionId("");
         let action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈 - EOS wallet demo app");
         if ( router.query.dev ) action = ping( actor );
-        const transaction_id = await wallet.pushTransaction([ action ], protocol );
+        const transaction_id = await wallet.pushTransaction([ action ], protocol, cosign );
         setTransactionId(transaction_id);
     }
 
