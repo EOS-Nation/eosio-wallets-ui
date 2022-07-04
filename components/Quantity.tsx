@@ -23,12 +23,12 @@ export function Quantity({ setQuantity, setTransactionId, actor, quantity, cosig
         let action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈 - EOS wallet demo app");
         if ( router.query.dev ) action = ping( actor );
         wallet.pushTransaction([ action ], protocol, cosign, flash )
-        .then((trx: any) => {
-            if(flash && trx.transaction_id != '') flash(`Successfully pushed the transaction!`, 'success')
-            setTransactionId(trx.transaction_id);
+        .then((transaction_id: string) => {
+            if(flash && transaction_id != '') flash(`Successfully pushed the transaction!`, 'success')
+            setTransactionId(transaction_id);
         })
         .catch((err: any) => {
-            if(flash) flash(`Failed to push transaction: ${err.message ?? err}`, 'error')
+            if(flash) flash(`Transaction not pushed: ${err.message ?? err}`, 'error')
         })
     }
 
