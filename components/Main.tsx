@@ -1,10 +1,9 @@
-import type { NextPage } from 'next'
 import { useState } from "react"
 import styles from '../styles/Home.module.css'
-import { Login, Logout } from '../components/Wallet'
-import { Quantity } from '../components/Quantity'
-import { Transaction } from "../components/Transaction";
-import { Highlight } from "../components/Highlight";
+import { Login, Logout } from './Wallet'
+import { Quantity } from './Quantity'
+import { Transaction } from "./Transaction";
+import { Highlight } from "./Highlight";
 import { useSnackbar } from "notistack";
 
 export function Main() {
