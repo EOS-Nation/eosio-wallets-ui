@@ -2,10 +2,10 @@ import * as anchor from "./anchor";
 import * as scatter from "./scatter";
 import * as storage from "./storage";
 // import * as analytics from "./analytics";
-import { Action } from "scatter-ts";
-import { ABI, ABIDef, Checksum256, PermissionLevel, PrivateKey, Signature, SignedTransaction, Transaction } from "anchor-link";
+import { cosignTransactionBackend } from "./cosign";
+import { Action } from "eosjs/dist/eosjs-serialize";
+import { SignedTransaction } from "anchor-link";
 
-const COSIGN_ENDPOINT = "https://edge.pomelo.io/api/cosign"
 export interface Wallet {
   actor: string;
   permission: string;
@@ -15,42 +15,11 @@ export interface Wallet {
   chain: string;
 }
 
-async function cosignTransactionBackend(actions: Action[]): Promise<{transaction: any, signatures: string[]} | undefined> {
-
-  try {
-    const resp = await fetch(COSIGN_ENDPOINT, {
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-          transaction: {
-            actions
-          },
-      }),
-      method: "POST"
-    });
-
-    if(resp.status != 200) throw `Failed to fetch trx from ${COSIGN_ENDPOINT}. Status: ${resp.status}`;
-
-    const { data } = await resp.json();
-
-    return {
-      transaction: data.transaction,
-      signatures: data.signatures
-    };
-  }
-  catch (err: any) {
-    console.log(`cosignTransactionBackend(): Failed to fetch free cpu.`, err.message ?? err)
-    return undefined;
-  }
-}
-
-
 async function handleScatter(actions: Action[], cosign: Boolean, flash: ((message: string, type: 'error'|'success'|'warning'|'info') => void) | undefined) {
   console.log('lib/wallet::handleScatter', { actions, cosign });
   const account = await scatter.login();
 
-  const cosigned = cosign ? await cosignTransactionBackend(actions) : false;
+  const cosigned = cosign ? await cosignTransactionBackend(actions, { actor: account.name, permission: account.authority }) : false;
   if (!cosigned) {
     // if failed to cosign - just sign via wallet
     const { transaction_id } = (await scatter.transact(actions) as any)
@@ -58,10 +27,13 @@ async function handleScatter(actions: Action[], cosign: Boolean, flash: ((messag
   }
 
   try {
-    // cosigned.transaction.actions.shift();
+    // sign with scatter wallet without broadcasting
     const signed = await scatter.sign(cosigned.transaction)
-    signed.signatures.unshift( cosigned.signatures[0] )
 
+    // add backend signature
+    signed.signatures.push( cosigned.signatures[0] )
+
+    // broadcast the transaction
     const response = await scatter.push(signed)
     return response.transaction_id;
   }
@@ -79,7 +51,7 @@ async function handleAnchor(actions: Action[], cosign: Boolean, flash: ((message
   const session = await anchor.login();
   if (!session) return "";
 
-  const cosigned = cosign ? await cosignTransactionBackend(actions) : false;
+  const cosigned = cosign ? await cosignTransactionBackend(actions, {actor: session.auth.actor.toString(), permission: session.auth.permission.toString()}) : false;
   if (!cosigned) {
     // if failed to cosign - just sign via wallet
     const { transaction } = await session.transact({ actions });
