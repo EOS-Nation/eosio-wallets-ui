@@ -13,6 +13,7 @@ const Home: NextPage = () => {
   const [ transaction_id, setTransactionId ] = useState<string>();
   const [ protocol, setProtocol ] = useState<"scatter"|"anchor">();
   const [ quantity, setQuantity ] = useState<string>("");
+  const [ cosign, setCosign ] = useState<boolean>(false);
 
   const wallets = !actor ? (
     <div className={styles.grid}>
@@ -28,12 +29,12 @@ const Home: NextPage = () => {
 
   const quantities = actor ? (
     <div className={styles.grid}>
-      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "1.0000 EOS" } actor={ actor } protocol={ protocol } />
-      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.5000 EOS" } actor={ actor } protocol={ protocol } />
-      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.2500 EOS" } actor={ actor } protocol={ protocol } />
-      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.1000 EOS" } actor={ actor } protocol={ protocol } />
-      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.0500 EOS" } actor={ actor } protocol={ protocol } />
-      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.0250 EOS" } actor={ actor } protocol={ protocol } />
+      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "1.0000 EOS" } actor={ actor } protocol={ protocol } cosign={ cosign } />
+      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.5000 EOS" } actor={ actor } protocol={ protocol } cosign={ cosign } />
+      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.2500 EOS" } actor={ actor } protocol={ protocol } cosign={ cosign } />
+      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.1000 EOS" } actor={ actor } protocol={ protocol } cosign={ cosign } />
+      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.0500 EOS" } actor={ actor } protocol={ protocol } cosign={ cosign } />
+      <Quantity setQuantity={ setQuantity } setTransactionId={ setTransactionId } quantity={ "0.0001 EOS" } actor={ actor } protocol={ protocol } cosign={ cosign } />
     </div>
   ) : '';
 
@@ -59,7 +60,14 @@ const Home: NextPage = () => {
           { protocol ? "✅" : '1. Select' } Wallet <Highlight str={ protocol } /><br/>
           { actor ? "✅" : '2. Login' } Account <Highlight str={ actor } /><br/>
           { actor && quantity ? "✅" : '3. Select' } Quantity <Highlight str={ actor ? quantity : "" } /><br/>
-          <Transaction transaction_id={ transaction_id } />
+          <Transaction transaction_id={ transaction_id } /><br/><br/>
+          <label>
+            <input
+              type="checkbox"
+              checked={ cosign }
+              onChange={ () => setCosign(!cosign) }
+            /> Cosign
+          </label>
         </p>
         { wallets }
         { quantities }

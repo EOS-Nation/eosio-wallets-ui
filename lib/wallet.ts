@@ -3,7 +3,9 @@ import * as scatter from "./scatter";
 import * as storage from "./storage";
 // import * as analytics from "./analytics";
 import { Action } from "scatter-ts";
+import { ABI, ABIDef, Checksum256, PermissionLevel, PrivateKey, Signature, SignedTransaction, Transaction } from "anchor-link";
 
+const COSIGN_ENDPOINT = "https://edge.pomelo.io/api/cosign"
 export interface Wallet {
   actor: string;
   permission: string;
@@ -13,23 +15,92 @@ export interface Wallet {
   chain: string;
 }
 
-async function handleScatter(actions: Action[]) {
-  console.log('lib/wallet::handleScatter', { actions });
-  await scatter.login();
-  const { transaction_id } = (await scatter.transact(actions) as any)
-  return transaction_id;
+async function cosignTransactionBackend(actions: Action[]): Promise<{transaction: any, signatures: string[]} | undefined> {
+
+  try {
+    const resp = await fetch(COSIGN_ENDPOINT, {
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+          transaction: {
+            actions
+          },
+      }),
+      method: "POST"
+    });
+
+    if(resp.status != 200) throw `Failed to fetch trx from ${COSIGN_ENDPOINT}. Status: ${resp.status}`;
+
+    const { data } = await resp.json();
+
+    return {
+      transaction: data.transaction,
+      signatures: data.signatures
+    };
+  }
+  catch (err: any) {
+    console.log(`cosignTransactionBackend(): Failed to fetch free cpu.`, err.message ?? err)
+    return undefined;
+  }
 }
 
-async function handleAnchor(actions: Action[]) {
-  console.log('lib/wallet::handleAnchor', { actions });
+
+async function handleScatter(actions: Action[], cosign: Boolean) {
+  console.log('lib/wallet::handleScatter', { actions, cosign });
+  const account = await scatter.login();
+  console.log('🥐', account)
+
+  const cosigned = cosign ? await cosignTransactionBackend(actions) : false;
+  console.log('🐡', cosigned)
+  if (!cosigned) {
+    // if failed to cosign - just sign via wallet
+    const { transaction_id } = (await scatter.transact(actions) as any)
+    return transaction_id;
+  }
+
+  // const act = cosigned.transaction.actions.shift();
+  const signed = await scatter.sign(cosigned.transaction)
+  console.log('🐙', signed)
+  signed.signatures.unshift( cosigned.signatures[0] )
+
+  const response = await scatter.push(signed)
+
+  return response.transaction_id;
+}
+
+
+async function handleAnchor(actions: Action[], cosign: Boolean) {
+  console.log('lib/wallet::handleAnchor', { actions, cosign });
   const session = await anchor.login();
   if (!session) return "";
-  const { transaction } = await session.transact({ actions });
-  return transaction.id.toString();
+
+  const cosigned = cosign ? await cosignTransactionBackend(actions) : false;
+  if (!cosigned) {
+    // if failed to cosign - just sign via wallet
+    const { transaction } = await session.transact({ actions });
+    return transaction.id.toString();
+  }
+
+  // submit to anchor for user to sign without broadcasting
+  const local = await session.transact({ ... cosigned.transaction }, { broadcast: false });
+
+  // merge signatures and broadcast the transaction
+  const response = await session.client.v1.chain.push_transaction(
+    SignedTransaction.from({
+      ...local.transaction,
+      signatures: [
+        ...local.signatures,
+        ...cosigned.signatures,
+      ]
+    })
+  );
+
+  return response.transaction_id;
 }
 
-export function pushTransaction(actions: Action[], walletProtocol = "anchor") {
-  console.log('lib/wallet::pushTransaction', { actions, walletProtocol });
+export function pushTransaction(actions: Action[], walletProtocol = "anchor", cosign = false) {
+  console.log('lib/wallet::pushTransaction', { actions, walletProtocol, cosign });
 
   // input validation
   if (!walletProtocol) throw new (Error as any)('lib/wallet::pushTransaction:', { err: "[walletProtocol] is required" });
@@ -37,8 +108,8 @@ export function pushTransaction(actions: Action[], walletProtocol = "anchor") {
   if (!actions.length) throw new (Error as any)('lib/wallet::pushTransaction:', { err: "[actions] is empty" });
 
   // handle different wallet protocols
-  if (walletProtocol == "anchor") return handleAnchor(actions);
-  else if (walletProtocol == "scatter") return handleScatter(actions);
+  if (walletProtocol == "anchor") return handleAnchor(actions, cosign);
+  else if (walletProtocol == "scatter") return handleScatter(actions, cosign);
   throw new (Error as any)('lib/wallet::pushTransaction:', { err: "[walletProtocol] must be 'scatter|anchor'" });
 }
 
