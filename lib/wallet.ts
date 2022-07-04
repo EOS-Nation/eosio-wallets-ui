@@ -46,31 +46,35 @@ async function cosignTransactionBackend(actions: Action[]): Promise<{transaction
 }
 
 
-async function handleScatter(actions: Action[], cosign: Boolean) {
+async function handleScatter(actions: Action[], cosign: Boolean, flash: ((message: string, type: 'error'|'success'|'warning'|'info') => void) | undefined) {
   console.log('lib/wallet::handleScatter', { actions, cosign });
   const account = await scatter.login();
-  console.log('🥐', account)
 
   const cosigned = cosign ? await cosignTransactionBackend(actions) : false;
-  console.log('🐡', cosigned)
   if (!cosigned) {
     // if failed to cosign - just sign via wallet
     const { transaction_id } = (await scatter.transact(actions) as any)
     return transaction_id;
   }
 
-  // const act = cosigned.transaction.actions.shift();
-  const signed = await scatter.sign(cosigned.transaction)
-  console.log('🐙', signed)
-  signed.signatures.unshift( cosigned.signatures[0] )
+  try {
+    // cosigned.transaction.actions.shift();
+    const signed = await scatter.sign(cosigned.transaction)
+    signed.signatures.unshift( cosigned.signatures[0] )
 
-  const response = await scatter.push(signed)
-
-  return response.transaction_id;
+    const response = await scatter.push(signed)
+    return response.transaction_id;
+  }
+  catch(err: any) {
+    // if failed to sign/push - just sign original actions
+    if(flash && cosigned) flash(`Failed to cosign: ${err.message ?? err}`, 'warning')
+    const { transaction_id } = (await scatter.transact(actions) as any)
+    return transaction_id;
+  }
 }
 
 
-async function handleAnchor(actions: Action[], cosign: Boolean) {
+async function handleAnchor(actions: Action[], cosign: Boolean, flash: ((message: string, type: 'error'|'success'|'warning'|'info') => void) | undefined) {
   console.log('lib/wallet::handleAnchor', { actions, cosign });
   const session = await anchor.login();
   if (!session) return "";
@@ -99,7 +103,7 @@ async function handleAnchor(actions: Action[], cosign: Boolean) {
   return response.transaction_id;
 }
 
-export function pushTransaction(actions: Action[], walletProtocol = "anchor", cosign = false) {
+export function pushTransaction(actions: Action[], walletProtocol = "anchor", cosign = false, flash: ((message: string, type: 'error'|'success'|'warning'|'info') => void) | undefined = undefined) {
   console.log('lib/wallet::pushTransaction', { actions, walletProtocol, cosign });
 
   // input validation
@@ -108,8 +112,8 @@ export function pushTransaction(actions: Action[], walletProtocol = "anchor", co
   if (!actions.length) throw new (Error as any)('lib/wallet::pushTransaction:', { err: "[actions] is empty" });
 
   // handle different wallet protocols
-  if (walletProtocol == "anchor") return handleAnchor(actions, cosign);
-  else if (walletProtocol == "scatter") return handleScatter(actions, cosign);
+  if (walletProtocol == "anchor") return handleAnchor(actions, cosign, flash);
+  else if (walletProtocol == "scatter") return handleScatter(actions, cosign, flash);
   throw new (Error as any)('lib/wallet::pushTransaction:', { err: "[walletProtocol] must be 'scatter|anchor'" });
 }
 

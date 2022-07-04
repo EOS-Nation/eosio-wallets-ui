@@ -11,9 +11,10 @@ interface QuantityProps {
     quantity: string,
     cosign: boolean,
     protocol: "scatter" | "anchor" | undefined
+    flash: (message: string, type: 'error'|'success'|'warning'|'info') => void | undefined,
 }
 
-export function Quantity({ setQuantity, setTransactionId, actor, quantity, cosign, protocol } : QuantityProps ) {
+export function Quantity({ setQuantity, setTransactionId, actor, quantity, cosign, protocol, flash } : QuantityProps ) {
     const router = useRouter();
 
     const handleClick = async () => {
@@ -21,8 +22,14 @@ export function Quantity({ setQuantity, setTransactionId, actor, quantity, cosig
         setTransactionId("");
         let action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈 - EOS wallet demo app");
         if ( router.query.dev ) action = ping( actor );
-        const transaction_id = await wallet.pushTransaction([ action ], protocol, cosign );
-        setTransactionId(transaction_id);
+        wallet.pushTransaction([ action ], protocol, cosign, flash )
+        .then((trx: any) => {
+            if(flash && trx.transaction_id != '') flash(`Successfully pushed the transaction!`, 'success')
+            setTransactionId(trx.transaction_id);
+        })
+        .catch((err: any) => {
+            if(flash) flash(`Failed to push transaction: ${err.message ?? err}`, 'error')
+        })
     }
 
     return (
