@@ -20,9 +20,11 @@ export function Main() {
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/wombat.png" name="Wombat" />
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/tokenpocket.png" name="TP" />
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/scatter.svg" name="Scatter" />
-      <Login setProtocol={ setProtocol } setActor={ setActor } img="/imtoken.png" name="ImToken" />
+      {/* <Login setProtocol={ setProtocol } setActor={ setActor } img="/imtoken.png" name="ImToken" /> */}
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/start.png" name="Start" />
       <Login setProtocol={ setProtocol } setActor={ setActor } img="/metahub.png" name="Metahub" />
+      <Login setProtocol={ setProtocol } setActor={ setActor } img="/math.png" name="Math" />
+      <Login setProtocol={ setProtocol } setActor={ setActor } img="/leaf.png" name="Leaf" />
     </div>
   ) : '';
 
