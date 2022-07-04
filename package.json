@@ -9,11 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.9.3",
+    "@emotion/styled": "^11.9.3",
     "@greymass/eosio": "^0.5.4",
+    "@mui/material": "^5.8.6",
     "anchor-link": "^3.3.8",
     "anchor-link-browser-transport": "^3.2.5",
     "eosjs": "^22.1.0",
     "next": "12.1.0",
+    "notistack": "^2.0.5",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "scatter-ts": "^0.1.9"
