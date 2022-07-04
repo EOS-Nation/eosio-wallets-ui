@@ -1,6 +1,6 @@
 import { ScatterJS, ScatterEOS, Action, ScatterAccount } from 'scatter-ts';
 import { JsonRpc, Api } from 'eosjs';
-import { EOSIO_RPC, EOSIO_CHAIN_ID, SCATTER_IDENTIFIER } from "./constants";
+import { EOSIO_RPC, EOSIO_CHAIN_ID, SCATTER_IDENTIFIER, EOSIO_CHAIN_IDS } from "./constants";
 import { Transaction, TransactResult } from 'eosjs/dist/eosjs-api-interfaces';
 import { PushTransactionArgs } from 'eosjs/dist/eosjs-rpc-interfaces';
 
@@ -36,22 +36,19 @@ export async function sign(transaction: Transaction) {
   const api = getApi();
   // init ABIs, serialize trx
   const serializedTransaction = api.serializeTransaction(transaction);
-  // const abis = await Promise.all(transaction.actions.map(async action => api.abiProvider.getRawAbi(action.account)));
+
   // get keys
   const requiredKeys = await api.signatureProvider.getAvailableKeys()
   const signArgs = {
-    chainId: api.chainId,
+    chainId: api.chainId || EOSIO_CHAIN_IDS['eos'],   //some wallets don't provide chain id, so assume EOS mainnet
     requiredKeys,
     serializedTransaction,
     abis: [],
   }
 
-  console.log('🐍', signArgs)
   // sign trx
-
   const pushTransactionArgs = await api.signatureProvider.sign(signArgs)
 
-  console.log('🐳', pushTransactionArgs)
   return pushTransactionArgs;
 }
 
