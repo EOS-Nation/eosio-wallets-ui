@@ -1,10 +1,12 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import styles from '../styles/Home.module.css'
 import { Login, Logout } from './Wallet'
 import { Quantity } from './Quantity'
 import { Transaction } from "./Transaction";
 import { Highlight } from "./Highlight";
 import { useSnackbar } from "notistack";
+import { configWallet } from "eosio-wallets";
+import { EOSIO_RPC_ENDPOINT, EOSIO_CHAIN_ID, IDENTIFIER, COSIGN_ENDPOINT, COSIGN_REFERRER } from '../lib/constants';
 
 export function Main() {
   const [ actor, setActor ] = useState<string>("");
@@ -13,6 +15,16 @@ export function Main() {
   const [ quantity, setQuantity ] = useState<string>("");
   const [ cosign, setCosign ] = useState<boolean>(false);
   const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() =>
+    configWallet({
+      rpcEndpoint: EOSIO_RPC_ENDPOINT,
+      chainId: EOSIO_CHAIN_ID,
+      appId: IDENTIFIER,
+      cosignEndpoint: COSIGN_ENDPOINT,
+      cosignReferrer: COSIGN_REFERRER
+    })
+  );
 
   const wallets = !actor ? (
     <div className={styles.grid}>
