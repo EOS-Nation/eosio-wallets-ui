@@ -26,7 +26,7 @@ const Home: NextPage = () => {
 
       <footer className={styles.footer}>
         <a
-          href="https://github.com/dotGems/eosio-wallets-ui"
+          href="https://github.com/EOS-Nation/eosio-wallets"
           target="_blank"
           rel="noopener noreferrer"
         >
