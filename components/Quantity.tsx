@@ -1,8 +1,8 @@
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import * as wallet from "../lib/wallet";
 import { transfer, ping } from "../lib/actions";
 import { useRouter } from 'next/router'
+import Wallet from "eosio-wallets";
 
 interface QuantityProps {
     setTransactionId: any,
@@ -22,7 +22,7 @@ export function Quantity({ setQuantity, setTransactionId, actor, quantity, cosig
         setTransactionId("");
         let action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈 - EOS wallet demo app");
         if ( router.query.dev ) action = ping( actor );
-        wallet.pushTransaction([ action ], protocol, cosign, flash )
+        Wallet.pushTransaction([ action ], protocol, cosign, flash )
         .then((transaction_id: string) => {
             if(flash && transaction_id != '') flash(`Successfully pushed the transaction!`, 'success')
             setTransactionId(transaction_id);

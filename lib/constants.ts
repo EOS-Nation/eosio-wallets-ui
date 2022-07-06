@@ -17,5 +17,8 @@ export const EOSIO_CHAIN_IDS = {
     'telos': '4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11',
 }
 
-export const EOSIO_RPC = EOSIO_RPCS["eos"];
+export const EOSIO_RPC_ENDPOINT = EOSIO_RPCS["eos"];
 export const EOSIO_CHAIN_ID = EOSIO_CHAIN_IDS["eos"];
+
+export const COSIGN_ENDPOINT = 'https://edge.pomelo.io/api/cosign'
+export const COSIGN_REFERRER = 'eosiowallets'
