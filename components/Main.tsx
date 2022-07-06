@@ -5,7 +5,7 @@ import { Quantity } from './Quantity'
 import { Transaction } from "./Transaction";
 import { Highlight } from "./Highlight";
 import { useSnackbar } from "notistack";
-import { configWallet } from "eosio-wallets";
+import Wallet from "eosio-wallets";
 import { EOSIO_RPC_ENDPOINT, EOSIO_CHAIN_ID, IDENTIFIER, COSIGN_ENDPOINT, COSIGN_REFERRER } from '../lib/constants';
 
 export function Main() {
@@ -17,7 +17,7 @@ export function Main() {
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() =>
-    configWallet({
+    Wallet.init({
       rpcEndpoint: EOSIO_RPC_ENDPOINT,
       chainId: EOSIO_CHAIN_ID,
       appId: IDENTIFIER,

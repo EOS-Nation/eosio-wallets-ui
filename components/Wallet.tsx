@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import { loginWallet, logoutWallet } from "eosio-wallets";
+import Wallet from "eosio-wallets";
 
 interface LoginProps {
     setProtocol: any,
@@ -12,7 +12,7 @@ interface LoginProps {
 
 export function Login({ setProtocol, setActor, img, name, protocol = "scatter" } : LoginProps ) {
     const handleClick = async () => {
-        const actor = (await loginWallet(protocol))?.actor || 'Error';
+        const actor = (await Wallet.login(protocol))?.actor || 'Error';
         if ( actor ) {
             setActor( () => actor );
             setProtocol( () => protocol );
@@ -28,7 +28,7 @@ export function Login({ setProtocol, setActor, img, name, protocol = "scatter" }
 
 export function Logout({ setActor, setProtocol }: { setActor: any, setProtocol: any }) {
     const handleClick = async () => {
-        await logoutWallet();
+        await Wallet.logout();
         setActor("");
         setProtocol("");
     }
