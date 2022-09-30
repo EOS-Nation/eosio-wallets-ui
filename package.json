@@ -12,7 +12,7 @@
     "@emotion/react": "*",
     "@emotion/styled": "*",
     "@mui/material": "*",
-    "eosio-wallets": "*",
+    "eosio-wallets": "^0.3.2",
     "next": "*",
     "notistack": "*",
     "react": "18.x",

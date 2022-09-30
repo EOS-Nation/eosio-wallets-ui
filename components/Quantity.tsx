@@ -22,14 +22,14 @@ export function Quantity({ setQuantity, setTransactionId, actor, quantity, cosig
         setTransactionId("");
         let action = transfer( actor, "pomelo", quantity, "donate to Pomelo 🍈 - EOS wallet demo app");
         if ( router.query.dev ) action = ping( actor );
-        Wallet.pushTransaction([ action ], protocol, cosign, flash )
-        .then((transaction_id: string) => {
-            if(flash && transaction_id != '') flash(`Successfully pushed the transaction!`, 'success')
+
+        try {
+            const { transaction_id } = await Wallet.pushTransaction([ action ], protocol, cosign, {retry_trx: true} )
+            if (flash && transaction_id != '') flash(`Successfully pushed the transaction!`, 'success')
             setTransactionId(transaction_id);
-        })
-        .catch((err: any) => {
-            if(flash) flash(`Transaction not pushed: ${err.message ?? err}`, 'error')
-        })
+        } catch (err: any) {
+            if (flash) flash(`Transaction not pushed: ${err.message ?? err}`, 'error')
+        }
     }
 
     return (
